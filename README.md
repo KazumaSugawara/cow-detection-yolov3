@@ -16,17 +16,17 @@ As of now, the code only contains the detection module, but you should expect th
 ## Requirements
 1. Python 3.5
 2. OpenCV
-3. PyTorch 0.3
+3. PyTorch 0.3 / 0.4
 
-Using PyTorch 0.4 breaks the detector on the master branch.
+Using PyTorch 0.4 raises a whole bunch of warnings due to backward-compatible PyTorch 0.3 code. 
 
-For now, you can switch to the branch `pyt4` for running the detector with PyTorch 0.4.
+You can switch to the branch `pyt4` for running the detector with PyTorch 0.4-only code.
 
 
 
 ## Detection Example
 
-![Detection Example](https://github.com/ayooshkathuria/pytorch-yolo-v3/raw/master/det_messi.jpg)
+![Detection Example](https://i.imgur.com/m2jwneng.png)
 ## Running the detector
 
 ### On single or multiple images
@@ -80,6 +80,13 @@ feed will be taken from what the OpenCV, recognises as camera 0. The default ima
 python cam_demo.py
 ```
 You can easily tweak the code to use different weightsfiles, available at [yolo website](https://pjreddie.com/darknet/yolo/)
+
+### Detection across different scales
+YOLO v3 makes detections across different scales, each of which deputise in detecting objects of different sizes depending upon whether they capture coarse features, fine grained features or something between. You can experiment with these scales by the `--scales` flag. 
+
+```
+python detect.py --scales 1,3
+```
 
 ## Coming Soon
 

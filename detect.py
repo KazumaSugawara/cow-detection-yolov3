@@ -69,12 +69,27 @@ def arg_parse():
                         default = "yolov3.weights", type = str)
     parser.add_argument("--reso", dest = 'reso', help = 
                         "Input resolution of the network. Increase to increase accuracy. Decrease to increase speed",
-                        default = "416", type = str)
+                        default = "320", type = str)
+    parser.add_argument("--scales", dest = "scales", help = "Scales to use for detection",
+                        default = "1,2,3", type = str)
     
     return parser.parse_args()
 
 if __name__ ==  '__main__':
     args = arg_parse()
+    
+    scales = args.scales
+    scales = [int(x) for x in scales.split(',')]
+    
+    scales_indices = []
+    args.reso = int(args.reso)
+    num_boxes = [args.reso//8, args.reso//16, args.reso//32]
+    num_boxes = sum([3*(x**2) for x in num_boxes])
+    
+    for scale in scales:
+        li = list(range((scale - 1)* num_boxes // 3, scale * num_boxes // 3))
+        scales_indices.extend(li)
+
     images = args.images
     batch_size = int(args.bs)
     confidence = float(args.confidence)
@@ -146,9 +161,7 @@ if __name__ ==  '__main__':
 
     i = 0
     
-    output = torch.FloatTensor(1, 8)
-    if CUDA:
-        output = output.cuda()
+
     write = False
     model(get_test_input(inp_dim, CUDA), CUDA)
     
@@ -171,7 +184,8 @@ if __name__ ==  '__main__':
         # B x (bbox cord x no. of anchors) x grid_w x grid_h --> B x bbox x (all the boxes) 
         # Put every proposed box as a row.
         prediction = model(Variable(batch, volatile = True), CUDA)
-
+        
+        prediction = prediction[:,scales_indices]
 
         
         #get the boxes with object confidence > threshold
@@ -222,7 +236,12 @@ if __name__ ==  '__main__':
         if CUDA:
             torch.cuda.synchronize()
     
-    
+    try:
+        output
+    except NameError:
+        print("No detections were made")
+        exit()
+        
     output_recast = time.time()
     output[:,1:5] = torch.clamp(output[:,1:5], 0.0, float(inp_dim))
     
@@ -249,7 +268,7 @@ if __name__ ==  '__main__':
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1 , 1)[0]
         c2 = c1[0] + t_size[0] + 3, c1[1] + t_size[1] + 4
         cv2.rectangle(img, c1, c2,color, -1)
-        cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
+        cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1)
         return img
     
             
@@ -276,8 +295,8 @@ if __name__ ==  '__main__':
 
     
     torch.cuda.empty_cache()
-        
-        
+    
+    
         
         
     
