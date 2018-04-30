@@ -12,8 +12,11 @@ import pandas as pd
 import random
 import pickle as pkl
 import argparse
+import os
+import glob
+import csv
 from tqdm import tqdm
-
+from pathlib import Path
 
 def get_test_input(input_dim, CUDA):
     img = cv2.imread("dog-cycle-car.png")
@@ -72,7 +75,7 @@ def arg_parse():
     """
     parser.add_argument("--day", required = True)
     parser.add_argument("--base_hour", type = int, required = True)
-    parse.add_argument("--hours", type = int, required = True)
+    parser.add_argument("--hours", type = int, required = True)
 
     # 変更必要なし
     parser.add_argument("--confidence", dest = "confidence", help = "Object Confidence to filter predictions", default = 0.5)
@@ -97,7 +100,7 @@ if __name__ == '__main__':
     CUDA = torch.cuda.is_available()
 
     bbox_attrs = 5 + num_classes
-
+    print("Cow detection by YOLO v3...")
     print("Loading network.....")
     model = Darknet(args.cfgfile)
     model.load_weights(args.weightsfile)
@@ -137,22 +140,22 @@ if __name__ == '__main__':
     #while cap.isOpened():
     for hour in range(base_hour, last_hour):
 
-        #ret, frame = cap.read()
         hour = '%02d' % hour
+        #ret, frame = cap.read()
 
         #
-        img_dir = img_rootd + '/' + day + '/' + day + hour
-        img_list = sorted(glob.glob(os.path.join(img_dir, '*')))
+        img_dir = Path(img_rootd + '/' + day + '/' + hour + '/')
+        #img_list = sorted(glob.glob(os.path.join(img_dir, '*')))
+        img_list = sorted(list(img_dir.glob('*.jpg')))
 
         out_file = out_dir + '/' + day + hour + '.csv'
         #if ret:
-        print(out_file, '-----------------')
+        print('write to:',out_file, '-----------------')
         with open(out_file, 'w') as f:
             writer = csv.writer(f, lineterminator='\n')
 
             for img_path in tqdm(img_list):
-
-                img, orig_im, dim = prep_image(img_path, inp_dim)
+                img, orig_im, dim = prep_image(str(img_path), inp_dim)
 
                 im_dim = torch.FloatTensor(dim).repeat(1,2)
 
@@ -189,7 +192,7 @@ if __name__ == '__main__':
                     coords_all += coord
                 writer.writerow(coords_all)
 
-            """
+            """ 
                 list(map(lambda x: write(x, orig_im), output))
 
                 cv2.imshow("frame", orig_im)

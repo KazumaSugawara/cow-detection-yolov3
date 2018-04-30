@@ -19,7 +19,7 @@ def arg_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--day", required = True)
     parser.add_argument("--base_hour", type = int, required = True)
-    parse.add_argument("--hours", type = int, required = True)
+    parser.add_argument("--hours", type = int, required = True)
 
     return parser.parse_args()
 
@@ -35,18 +35,19 @@ if __name__ == "__main__":
     if not os.path.exists('./00_data/videos/' + day):
         os.makedirs('./00_data/videos/' + day)
 
-    if not os.path.exists('../00_data/pics/' + day):
+    if not os.path.exists('./00_data/pics/' + day):
         os.makedirs('./00_data/pics/' + day)
 
     #平畜産に変更
-    img_rootd = '/var/docker/data/cow/pics'
-
+    img_rootd = '/var/docker/data/hira/pics'
+    
+    print('cp images...')
     for hour in range(base_hour, last_hour):
         hour = '%02d' % hour
-        img_dir = img_rootd + '/' + args.day + '/' + args.day+hour
+        img_dir = img_rootd + '/' + args.day + '/' + hour
         img_list = sorted(glob.glob(os.path.join(img_dir, '*')))
 
-        out_dir = '../00_data/pics/' + args.day + '/' + args.day+hour
+        out_dir = './00_data/pics/' + args.day + '/' + hour
 
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)

@@ -1,4 +1,3 @@
-
 from __future__ import division
 
 import torch 
@@ -159,7 +158,7 @@ def write_results(prediction, confidence, num_classes, nms = True, nms_conf = 0.
 
             image_pred_class = image_pred_[class_mask_ind].view(-1,7)
 
-		
+                
         
              #sort the detections such that the entry with the maximum objectness
              #confidence is at the top
